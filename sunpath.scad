@@ -138,14 +138,17 @@ points2 = [
 ];
 
 
-R = 865;
+// Scale down...
+Ratio = 76 / 865;
+
+R = 76; // 865;
 
 path1 = [
-    for (p = points1) [p[0] - R, p[1] - R, 0]
+    for (p = points1) [p[0]*Ratio - R, p[1]*Ratio - R, 0]
 ];
 
 path2 = [
-    for (p = points2) [p[0] - R, p[1] - R, 0]
+    for (p = points2) [p[0]*Ratio - R, p[1]*Ratio - R, 0]
 ];
 
 
@@ -253,15 +256,15 @@ difference() {
 
 
 union() {
-	color("red") projected(path1, [0,-20,0], R+0.1145);
-	color("blue") projected(path2, [0,20,0], R+0.09);
-	color("yellow") linear_extrude(height=20) circle(r=R);
+	color("red") projected(path1, [0,-3,0], R+0.1145*Ratio);
+	color("blue") projected(path2, [0,3,0], R+0.09*Ratio);
+	color("yellow") linear_extrude(height=3) circle(r=R);
 };
 
 color("blue")
 difference() {
-	cube([10000,10000,10000], center=true);
-	//color("yellow") linear_extrude(height=10000) circle(r=R);
+	cube([R*10,R*10,R*10], center=true);
+	//color("yellow") linear_extrude(height=R*10) circle(r=R);
 	sphere(r=R);
 };
 };
