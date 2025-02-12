@@ -44,6 +44,6 @@ console.log("Path points:");
 pathPoints.forEach((points, index) => {
   console.log(`\nPath ${index + 1}:`);
   points.forEach((point) => {
-    console.log(`[${point[0]}, ${point[1]}]`);
+    console.log(`[${point[0]}, ${point[1]}],`);
   });
 });

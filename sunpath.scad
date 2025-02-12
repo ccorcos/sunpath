@@ -1,8 +1,9 @@
 $fn = 100; // Set number of segments for smooth circle
-// circle(r=866);
+
 
 points1 = [
-	[126, 419.5],
+	[124.114, 418.334],
+	[114.35, 437.735],
 	[105.5, 457.5],
 	[91, 494.5],
 	[81.5, 530.5],
@@ -26,9 +27,9 @@ points1 = [
 	[253.431, 910.74],
 	[283.393, 932.179],
 	[305.798, 946.413],
-	[331.63, 961.965],
-	[362.383, 978.747],
-	[381.273, 987.797],
+	[331.63, 961.964],
+	[362.383, 978.746],
+	[381.273, 987.796],
 	[443.042, 1015.21],
 	[485.744, 1030.85],
 	[524.667, 1042.8],
@@ -40,7 +41,7 @@ points1 = [
 	[743.691, 1085.47],
 	[780.938, 1088.7],
 	[815.722, 1089.93],
-	[850.815, 1090.86],
+	[850.815, 1090.85],
 	[922.692, 1089.62],
 	[956.399, 1087.62],
 	[999.341, 1084.08],
@@ -55,7 +56,7 @@ points1 = [
 	[1277.92, 1018.36],
 	[1306.24, 1006.97],
 	[1325.79, 998.969],
-	[1343.18, 990.658],
+	[1343.18, 990.657],
 	[1369.66, 978.498],
 	[1391.05, 966.339],
 	[1412.29, 954.026],
@@ -80,18 +81,18 @@ points1 = [
 	[1641.16, 498.289],
 	[1633.46, 476.742],
 	[1624.84, 456.271],
-	[1614.69, 438.725],
-	[1604.07, 419.486],
+	[1615.98, 437.88],
+	[1605.8, 418.339],
 ];
 
 points2 = [
-	[1611.1, 1300.4],
+	[1612.2, 1300.92],
 	[1595.64, 1324.67],
 	[1580.68, 1345.11],
 	[1562.56, 1366.72],
 	[1546.61, 1384.17],
 	[1530.65, 1400.95],
-	[1511.7, 1417.91],
+	[1511.71, 1417.91],
 	[1495.25, 1432.53],
 	[1473.81, 1448.49],
 	[1454.86, 1462.95],
@@ -121,7 +122,7 @@ points2 = [
 	[715.083, 1618.18],
 	[667.216, 1611.7],
 	[614.695, 1602.06],
-	[563.504, 1590.93],
+	[563.503, 1590.93],
 	[504.833, 1573.31],
 	[454.307, 1556.02],
 	[406.107, 1535.75],
@@ -130,27 +131,31 @@ points2 = [
 	[277.963, 1464.94],
 	[251.204, 1444.5],
 	[215.636, 1414.58],
-	[185.387, 1386.83],
+	[187.687, 1389],
 	[159.791, 1357.91],
-	[137.187, 1327.82],
-	[118.24, 1297.57],
+	[136.426, 1328.01],
+	[118.85, 1302.61],
 ];
 
 
+R = 865;
+
 path1 = [
-		[0,0,0],
-    for (p = points1) [p[0] - 866, p[1] - 866, 0]
+    for (p = points1) [p[0] - R, p[1] - R, 0]
 ];
 
 path2 = [
-		[0,0,0],
-    for (p = points2) [p[0] - 866, p[1] - 866, 0]
+    for (p = points2) [p[0] - R, p[1] - R, 0]
 ];
 
 
-module create_surface(path) {
-    // Create a surface by connecting points to origin
+module create_surface(points) {
+		path = [
+			[0,0,0],
+			for (p = points) [p[0], p[1], 0]
+	];
 
+    // Create a surface by connecting points to origin
     polyhedron(
         points = path,
         faces = [
@@ -163,6 +168,108 @@ module create_surface(path) {
     );
 }
 
+module hemisphere() {
+	// Hemisphere with radius 866
+	difference() {
+			sphere(r=866);
+			translate([0,0,-866])
+					cube([2000,2000,2*866], center=true);
+	}
+}
 
-color("red") create_surface(path1);
-color("blue") create_surface(path2);
+let(
+    x = 1604.07 - R,
+    y = 419.486 - R,
+    z = sqrt(R*R - x*x - y*y)
+) echo([x, y, z]);
+
+
+module projected(points, dir, R) {
+
+	projected_path = [
+			[0,0,0],
+			for (p = points)
+					let (
+							x = p[0],
+							y = p[1],
+							// Calculate z coordinate on hemisphere surface
+							z = sqrt(R*R - x*x - y*y)
+					)
+					[x, y, z]
+	];
+
+
+	difference() {
+		hull() {
+			polyhedron(
+				points = projected_path,
+				faces = [
+					for(i = [1:len(projected_path)-1]) [0, i, i+1],
+					[0, len(projected_path), 1] // Add closing face
+				]
+			);
+
+			translate(dir)
+			polyhedron(
+				points = projected_path,
+				faces = [
+					for(i = [1:len(projected_path)-1]) [0, i, i+1],
+					[0, len(projected_path), 1] // Add closing face
+				]
+			);
+		}
+		translate(dir) hull() {
+			polyhedron(
+				points = projected_path,
+				faces = [
+					for(i = [1:len(projected_path)-1]) [0, i, i+1],
+					[0, len(projected_path), 1] // Add closing face
+				]
+			);
+		};
+	}
+
+
+
+	// Draw projected path
+	//minkowski() {
+	// polyhedron(
+	// 		points = concat(
+	// 			projected_path,
+	// 			[for (p = projected_path) [p[0], p[1], p[2]+20]]
+	// 		),
+	// 		faces = concat(
+	// 				[for(i = [1:len(projected_path)-1]) [0, i, i+1]],
+	// 				[for(i = [0:len(projected_path)-1]) [i,len(projected_path)+i, len(projected_path)+i+1, i+1]]
+	// 		)
+	// );
+	//sphere(r=10);
+	//};
+
+
+}
+
+difference() {
+
+
+union() {
+	color("red") projected(path1, [0,-20,0], R+0.1145);
+	color("blue") projected(path2, [0,20,0], R+0.09);
+	color("yellow") linear_extrude(height=20) circle(r=R);
+};
+
+color("blue")
+difference() {
+	cube([10000,10000,10000], center=true);
+	//color("yellow") linear_extrude(height=10000) circle(r=R);
+	sphere(r=R);
+};
+};
+
+
+
+
+
+//color("red") create_surface(path1);
+//color("blue") create_surface(path2);
+
